@@ -310,4 +310,4 @@ Pour réinitialiser les données de test avant le jour J :
 ## 📞 Contact
 
 Application développée pour le mariage de Yaoundé 2026.
-Budget infrastructure : ~25 000 FCFA/mois (FREE tiers cloud).
+.
