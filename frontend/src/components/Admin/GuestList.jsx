@@ -1,7 +1,7 @@
 /**
  * GuestList — Liste complète invités avec recherche/filtre/export
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   IconSearch, IconFilter, IconPlus, IconTrash,
   IconEdit, IconDownload, IconQrcode, IconX, IconCheck,
@@ -15,6 +15,9 @@ const STATUS_MAP = { 'Arrivés': 'arrived', 'En attente': 'registered', 'Absents
 
 export default function GuestList() {
   const toast = useToast();
+  const toastRef = useRef(toast);
+  useEffect(() => { toastRef.current = toast; }, [toast]);
+
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -44,11 +47,11 @@ export default function GuestList() {
       setGuests(normalized);
       setTotal(res.data.total || 0);
     } catch (err) {
-      toast.error('Erreur chargement : ' + err.message);
+      toastRef.current.error('Erreur chargement : ' + err.message);
     } finally {
       setLoading(false);
     }
-  }, [search, filter, toast]);
+  }, [search, filter]); // toast retiré des dépendances → plus de boucle infinie
 
   useEffect(() => {
     const t = setTimeout(fetchGuests, 300);
