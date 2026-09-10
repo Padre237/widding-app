@@ -2,7 +2,7 @@
  * Système Toast — notifications légères
  * Utilisé via useToast() hook dans toute l'app
  */
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import {
   IconCheck,
   IconX,
@@ -51,12 +51,12 @@ export function useToast() {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error('useToast doit être utilisé dans <ToastProvider>');
 
-  return {
+  return useMemo(() => ({
     success: (msg, duration)  => ctx.addToast(msg, 'success', duration),
     error:   (msg, duration)  => ctx.addToast(msg, 'error',   duration || 5000),
     warning: (msg, duration)  => ctx.addToast(msg, 'warning', duration),
     info:    (msg, duration)  => ctx.addToast(msg, 'info',    duration),
-  };
+  }), [ctx.addToast]); // eslint-disable-line
 }
 
 // ── Composant Toast individuel ────────────────────────────────────────────

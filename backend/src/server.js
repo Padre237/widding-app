@@ -51,10 +51,11 @@ app.use(cors({
 // ── Rate limiting global ──────────────────────────────────────────────────
 app.use('/api', rateLimit({
   windowMs:  60 * 1000,
-  max:       parseInt(process.env.API_RATE_LIMIT_PER_MIN || '60', 10),
+  max:       parseInt(process.env.API_RATE_LIMIT_PER_MIN || '300', 10),
   standardHeaders: true,
   legacyHeaders:   false,
   message: { error: 'Trop de requêtes — réessayez dans une minute' },
+  skip: (req) => req.path === '/health', // ne pas limiter le health check
 }));
 
 // ── Body parsers ──────────────────────────────────────────────────────────
