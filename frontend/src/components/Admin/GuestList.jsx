@@ -32,7 +32,16 @@ export default function GuestList() {
         limit: 50,
       };
       const res = await guestsAPI.list(params);
-      setGuests(res.data.guests || []);
+      // Le backend retourne du snake_case, on normalise en camelCase
+      const normalized = (res.data.guests || []).map((g) => ({
+        ...g,
+        tableNumber:         g.tableNumber         ?? g.table_number,
+        tableName:           g.tableName           ?? g.table_name,
+        arrivalTime:         g.arrivalTime         ?? g.arrival_time,
+        companions:          g.companions          ?? 0,
+        dietaryRestrictions: g.dietaryRestrictions ?? g.dietary_restrictions,
+      }));
+      setGuests(normalized);
       setTotal(res.data.total || 0);
     } catch (err) {
       toast.error('Erreur chargement : ' + err.message);
@@ -212,14 +221,14 @@ function GuestModal({ guest, onClose, onSaved }) {
   const toast = useToast();
   const isEdit = !!guest;
   const [form, setForm] = useState({
-    name: guest?.name || '',
-    email: guest?.email || '',
-    phone: guest?.phone || '',
-    tableNumber: guest?.tableNumber || '',
-    tableName: guest?.tableName || '',
-    companions: guest?.companions || 0,
-    dietaryRestrictions: guest?.dietaryRestrictions || '',
-    zone: guest?.zone || '',
+    name:                guest?.name || '',
+    email:               guest?.email || '',
+    phone:               guest?.phone || '',
+    tableNumber:         guest?.tableNumber ?? guest?.table_number ?? '',
+    tableName:           guest?.tableName   ?? guest?.table_name  ?? '',
+    companions:          guest?.companions  ?? 0,
+    dietaryRestrictions: guest?.dietaryRestrictions ?? guest?.dietary_restrictions ?? '',
+    zone:                guest?.zone || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -228,11 +237,22 @@ function GuestModal({ guest, onClose, onSaved }) {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
+      // Mapper camelCase → snake_case pour le backend
+      const payload = {
+        name:                 form.name,
+        email:                form.email,
+        phone:                form.phone,
+        table_number:         form.tableNumber ? parseInt(form.tableNumber, 10) : null,
+        table_name:           form.tableName,
+        companions:           parseInt(form.companions, 10) || 0,
+        dietary_restrictions: form.dietaryRestrictions,
+        zone:                 form.zone,
+      };
       if (isEdit) {
-        await guestsAPI.update(guest.id, form);
+        await guestsAPI.update(guest.id, payload);
         toast.success('Invité modifié');
       } else {
-        await guestsAPI.create(form);
+        await guestsAPI.create(payload);
         toast.success('Invité ajouté');
       }
       onSaved();
@@ -245,8 +265,8 @@ function GuestModal({ guest, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
-      <div className="overlay-backdrop" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg bg-surface rounded-t-2xl sm:rounded-xl shadow-xl p-space-lg max-h-[90vh] overflow-y-auto modal-enter">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-[201] w-full max-w-lg bg-surface rounded-t-2xl sm:rounded-xl shadow-xl p-space-lg max-h-[90vh] overflow-y-auto modal-enter">
         <div className="flex items-center justify-between mb-space-lg">
           <h3 className="font-display text-headline-sm text-on-surface">
             {isEdit ? 'Modifier l\'invité' : 'Ajouter un invité'}
