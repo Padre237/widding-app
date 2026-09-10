@@ -28,6 +28,9 @@ export const logger = pino({
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// ── Trust proxy (Render / Vercel / reverse proxies) ───────────────────────
+app.set('trust proxy', 1);
+
 // ── Sécurité headers ──────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
